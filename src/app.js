@@ -2,39 +2,204 @@ const express = require("express");
 const app = express();
 
 
+const connectDB=require("./config/database")
+const User=require("./models/user")
+app.use(express.json()) //we can use express.json() middleware to parse the request body and get the data in req.body
+
+app.post("/signup",async (req,res)=>{
+
+//middleware is required to parse the request body and we can use express.json() middleware to parse the request body and get the data in req.body
+
+
+
+    const user=new User( req.body)
+       try{
+        await user.save()
+        res.send("user has been saved in the database")
+
+ } catch(err){
+    res.status(400).send("unauthorized",err)
+ }
+})
+
+//get user by email
+
+
+app.get("/user",async(req,res)=>{
+const userEmail=req.body.email;
+try{
+    const users=await User.find({email:userEmail})
+    if(users.length===0){
+        res.status(404).send("user not found")
+    }else
+    res.send(users)
+}
+catch(err){
+    res.status(400).send("something went wrong",err)
+}
+
+    })
+
+
+//feed ->getting all the users
+
+app.get("/feed",async(req,res)=>{
+
+    try{
+        const users=await User.find({})
+        res.send(users)
+    }
+    catch(err){
+        res.status(400).send("something went wrong",err)
+    }
+})
+
+//deleting user by id
+
+app.get("/deleteID",async(req,res)=>{
+    const userId=req.body.userId;
+    try{
+        const users=await User.findByIdAndDelete(userId)
+        res.send("user deleted successfully")
+    }
+    catch(err){
+        res.status(400).send("something went wrong",err)
+    }
+})
+
+// update the user
+
+app.patch("/update", async(req,res)=>{
+    const userId=req.body.userId
+    try{
+        const users=await User.findByIdAndUpdate(userId,req.body)
+        res.send("user updated successfully")
+    }
+    catch(err){
+        res.status(400).send("something went wrong",err)
+    }
+})
+
+connectDB().then(()=>{
+    console.log("databse is connected successfully")
+    app.listen(7777,()=>{
+        console.log("server is listening to port 7777")
+    })
+}).catch((err)=>{
+console.log("db is not connected")
+})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// //we can give multiple request handlers for the same route and they will be executed one by one by using next() function
+
+// //if dont use next() function then only first handler will be executed and other handlers will be ignored
+// app.get("/user",(req,res,next)=>{
+//     //if we give anything in colsole.log it will print in the terminal
+
+// res.send("first response")
+// next() //it will call the next handler for the same route
+// },( req,res)=>{
+//     res.send("second response")
+// });
+
+// // app.listen(5000, () => {
+// //     console.log("server is running on port 5000");
+// // });
+
+
+
+// app.get("/getUserData",(req,res)=>{
+//     try{
+//         throw new Error("kfkwebfbk");
+//         res.send("user data")
+//     }
+//     catch(err){
+//         res.status(5000).send("something went wrong")
+//     }
+
+
+// })
+// app.get("/getUserDAta",(err,req,res,next)=>{
+// if(err){
+//     res.status(500).send("something went wrong");
+// }
+// })
+
+// app.listen(7777,()=>{
+//     console.log("server is successfully listening to port 7777")
+// })
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // get will handle request call only to specific route but use will handle request call to all the routes which it matches with first
-app.get("/", (req, res) => {
-    res.send("welcome to the main page");
-});
+// app.get("/", (req, res) => {
+//     res.send("welcome to the main page");
+// });
 
-app.get("/hello", (req, res) => {
-    res.send("hello from the server");
-});
+// app.get("/hello", (req, res) => {
+//     res.send("hello from the server");
+// });
 
-app.get("/test", (req, res) => {
-    res.send("testing");
-});
+// app.get("/test", (req, res) => {
+//     res.send("testing");
+// });
 
-app.get("/user", (req, res) => {
-    res.send({ firstName: "pooja", lastName: "rawat" });
-});
+// app.get("/user", (req, res) => {
+//     res.send({ firstName: "pooja", lastName: "rawat" });
+// });
 
-app.post("/user", (req, res) => {
-    res.send("data has been saved in the database");
-});
+// app.post("/user", (req, res) => {
+//     res.send("data has been saved in the database");
+// });
 
-app.delete("/user", (req, res) => {
-    res.send("data deleted from the database");
-});
+// app.delete("/user", (req, res) => {
+//     res.send("data deleted from the database");
+// });
 
-app.get(/ab?cd/, (req, res) => {
-    res.send("b is optional");
-});
+// app.get(/ab?cd/, (req, res) => {
+//     res.send("b is optional");
+// });
 
-app.get(/ab+cd/, (req, res) => {
-    res.send("one or more b");
-});
-
-app.listen(5000, () => {
-    console.log("server is running on port 5000");
-});
+// app.get(/ab+cd/, (req, res) => {
+//     res.send("one or more b");
+// });
