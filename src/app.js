@@ -1,6 +1,7 @@
+require("dotenv").config();
+
 const express = require("express");
 const app = express();
-
 
 const connectDB=require("./config/database")
 const User=require("./models/user")
@@ -69,9 +70,18 @@ app.get("/deleteID",async(req,res)=>{
 
 // update the user
 
-app.patch("/update", async(req,res)=>{
-    const userId=req.body.userId
+app.patch("/update/:userId", async(req,res)=>{
+    const userId=req.params?.userId
+    const data=req.body;
     try{
+         const is_allowed = ["lastName","photoURL","about","gender","age"]
+    const isUpdateAllowed=Object.keys(data).every((k)=>
+        is_allowed.includes(k)
+    )
+    if(!isUpdateAllowed){
+        throw new Error("update not allowed")
+}
+
         const users=await User.findByIdAndUpdate(userId,req.body)
         res.send("user updated successfully")
     }
@@ -80,6 +90,10 @@ app.patch("/update", async(req,res)=>{
     }
 })
 
+
+//try and catch  for updattion allowed in the given field
+
+ 
 connectDB().then(()=>{
     console.log("databse is connected successfully")
     app.listen(7777,()=>{
