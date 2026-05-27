@@ -1,26 +1,51 @@
 require("dotenv").config();
-
 const express = require("express");
 const app = express();
-
+const bcrypt=require("bcrypt")
 const connectDB=require("./config/database")
 const User=require("./models/user")
+const validateSignupData=require("./utils/validate")
 app.use(express.json()) //we can use express.json() middleware to parse the request body and get the data in req.body
 
 app.post("/signup",async (req,res)=>{
 
 //middleware is required to parse the request body and we can use express.json() middleware to parse the request body and get the data in req.body
+  try{
+    
+const {firstName,lastName,email,password,age}=req.body
 
-
-
-    const user=new User( req.body)
-       try{
+const passwordHash=await bcrypt.hash(password,10)
+console.log(passwordHash)
+    const user=new User( {firstName, lastName, email, password:passwordHash,age})
+     
         await user.save()
         res.send("user has been saved in the database")
 
  } catch(err){
-    res.status(400).send("unauthorized",err)
+    res.status(400).send(err.message)
  }
+})
+
+
+//login api
+
+app.post("/login", async(req,res)=>{
+    try{
+        const{email,password}= req.body
+        const user= await User.findOne({email})
+        if(!user){
+            throw new Error("email or password is not correct ")
+        }
+       const isPasswordValid= await bcrypt.compare(password,user.password);
+       if(isPasswordValid){
+        res.send("login successful")
+    }else{
+        throw new Error("email or password is not correct")
+    }
+}
+catch(err){
+    res.status(400).send("ERROR:"+err.message)
+}
 })
 
 //get user by email
@@ -100,7 +125,7 @@ connectDB().then(()=>{
         console.log("server is listening to port 7777")
     })
 }).catch((err)=>{
-console.log("db is not connected")
+console.log(err)
 })
 
 
