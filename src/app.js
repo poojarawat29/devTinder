@@ -5,8 +5,11 @@ const bcrypt=require("bcrypt")
 const connectDB=require("./config/database")
 const User=require("./models/user")
 const validateSignupData=require("./utils/validate")
+const cookieParser=require("cookie-parser")
+const jwt=require("jsonwebtoken")
+const userAuth=require("./middleware/auth")
 app.use(express.json()) //we can use express.json() middleware to parse the request body and get the data in req.body
-
+app.use(cookieParser()) //we can use cookie-parser middleware to parse the cookies and get the data in req.cookies
 app.post("/signup",async (req,res)=>{
 
 //middleware is required to parse the request body and we can use express.json() middleware to parse the request body and get the data in req.body
@@ -38,6 +41,8 @@ app.post("/login", async(req,res)=>{
         }
        const isPasswordValid= await bcrypt.compare(password,user.password);
        if(isPasswordValid){
+const token= await jwt.sign({_id:user._id},process.env.JWT_SECRET_KEY,{expiresIn:"1h"})
+        res.cookie("token",token)
         res.send("login successful")
     }else{
         throw new Error("email or password is not correct")
@@ -48,6 +53,25 @@ catch(err){
 }
 })
 
+
+app.get("/profile",userAuth,async(req,res)=>{
+ try{ 
+
+      const user=req.user
+res.send(user)
+if(!user){
+   throw new Error("user not found")
+}
+
+   else{
+    res.send(user)
+   }
+}
+catch(err){
+    res.status(400).send("ERROR:"+err.message)      
+
+}
+})
 //get user by email
 
 
