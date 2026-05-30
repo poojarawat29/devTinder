@@ -4,6 +4,7 @@ const validateSignupData=require("../utils/validate")
 const bcrypt=require("bcrypt")
 const User=require("../models/user")
 const jwt=require("jsonwebtoken")
+const validator = require("validator");
 
 //signup api
 authRouter.post("/signup",async(req,res)=>{
@@ -25,28 +26,30 @@ authRouter.post("/signup",async(req,res)=>{
     
 //login api
 
-authRouter.post("/login",async(req,res)=>{
-     try{
-        const{email,password}= req.body
-        const user= await User.findOne({email})
-        if(!user){
-            throw new Error("email or password is not correct ")
-        }
-       const isPasswordValid= await bcrypt.compare(password,user.password);
-       if(isPasswordValid){
-        const token= await jwt.sign({_id:user._id},process.env.JWT_SECRET_KEY,{expiresIn:"1h"})
-        res.cookie("token",token)
-        res.send("login successful")
-    }else{
-        throw new Error("email or password is not correct")
+authRouter.post("/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    if (!validator.isEmail(email)) {
+      throw new Error("Invalid Email");
     }
-}
-catch(err){
-    res.status(400).send("ERROR:"+err.message)
-}
-})
-
-
+    const user = await User.findOne({ email: email });
+    if (!user) {
+      throw new Error("Invalid Credentials");
+    }
+    const isValidPassword = await user.validatePassword(password);
+    if (isValidPassword) {
+      const token = await user.getjwt();
+      res.cookie("token", token, {
+        expires: new Date(Date.now() + 8 * 3600000),
+      });
+      res.status(200).json({ user });
+    } else {
+      throw new Error("Invalid Credentials");
+    }
+  } catch (err) {
+    res.status(400).send("ERROR:" + err.message);
+  }
+});
 //logout api
 
 
