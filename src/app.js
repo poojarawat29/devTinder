@@ -10,69 +10,14 @@ const jwt=require("jsonwebtoken")
 const userAuth=require("./middleware/auth")
 app.use(express.json()) //we can use express.json() middleware to parse the request body and get the data in req.body
 app.use(cookieParser()) //we can use cookie-parser middleware to parse the cookies and get the data in req.cookies
-app.post("/signup",async (req,res)=>{
 
-//middleware is required to parse the request body and we can use express.json() middleware to parse the request body and get the data in req.body
-  try{
-    
-const {firstName,lastName,email,password,age}=req.body
+const authRouter=require("./routes/auth")
+const profileRouter=require("./routes/profile")
+const requestRouter=require("./routes/request")
 
-const passwordHash=await bcrypt.hash(password,10)
-console.log(passwordHash)
-    const user=new User( {firstName, lastName, email, password:passwordHash,age})
-     
-        await user.save()
-        res.send("user has been saved in the database")
-
- } catch(err){
-    res.status(400).send(err.message)
- }
-})
-
-
-//login api
-
-app.post("/login", async(req,res)=>{
-    try{
-        const{email,password}= req.body
-        const user= await User.findOne({email})
-        if(!user){
-            throw new Error("email or password is not correct ")
-        }
-       const isPasswordValid= await bcrypt.compare(password,user.password);
-       if(isPasswordValid){
-const token= await jwt.sign({_id:user._id},process.env.JWT_SECRET_KEY,{expiresIn:"1h"})
-        res.cookie("token",token)
-        res.send("login successful")
-    }else{
-        throw new Error("email or password is not correct")
-    }
-}
-catch(err){
-    res.status(400).send("ERROR:"+err.message)
-}
-})
-
-
-app.get("/profile",userAuth,async(req,res)=>{
- try{ 
-
-      const user=req.user
-res.send(user)
-if(!user){
-   throw new Error("user not found")
-}
-
-   else{
-    res.send(user)
-   }
-}
-catch(err){
-    res.status(400).send("ERROR:"+err.message)      
-
-}
-})
-//get user by email
+app.use("/",authRouter)
+app.use("/",profileRouter)
+app.use("/",requestRouter)
 
 
 app.get("/user",async(req,res)=>{
