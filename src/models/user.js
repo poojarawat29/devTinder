@@ -41,7 +41,8 @@ const userSchema=mongoose.Schema({
         type:String,
         default:"https://www.kindpng.com/imgv/ioJmwwJ_dummy-profile-image-jpg-hd-png-download/"
      },
-
+skills:{
+    type:[String]}
  
 })
 
