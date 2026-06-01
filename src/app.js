@@ -14,11 +14,11 @@ app.use(cookieParser()) //we can use cookie-parser middleware to parse the cooki
 const authRouter=require("./routes/auth")
 const profileRouter=require("./routes/profile")
 const requestRouter=require("./routes/request")
-
+const userRouter=require("./routes/user")
 app.use("/",authRouter)
 app.use("/",profileRouter)
 app.use("/",requestRouter)
-
+app.use("/",userRouter)
 //login api
 
 
@@ -115,7 +115,7 @@ app.patch("/update/:userId", async(req,res)=>{
 
  
 connectDB().then(()=>{
-    console.log("databse is connected successfully")
+    console.log("database is connected successfully")
     app.listen(7777,()=>{
         console.log("server is listening to port 7777")
     })
