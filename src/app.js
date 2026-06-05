@@ -8,7 +8,13 @@ const validateSignupData=require("./utils/validate")
 const cookieParser=require("cookie-parser")
 const jwt=require("jsonwebtoken")
 const userAuth=require("./middleware/auth")
-app.use(express.json()) //we can use express.json() middleware to parse the request body and get the data in req.body
+const cors=require("cors") //we can use cors middleware to allow cross-origin requests from the frontend to the backend
+app.use(
+  cors({
+    origin: "http://localhost:5174",
+    credentials: true,
+  })
+);app.use(express.json()) //we can use express.json() middleware to parse the request body and get the data in req.body
 app.use(cookieParser()) //we can use cookie-parser middleware to parse the cookies and get the data in req.cookies
 
 const authRouter=require("./routes/auth")

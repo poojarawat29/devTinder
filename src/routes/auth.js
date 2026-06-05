@@ -44,12 +44,13 @@ authRouter.post("/login", async (req, res) => {
       });
       res.status(200).json({ user });
     } else {
-      throw new Error("Invalid Credentials");
+      throw new Error("Invalid Vredentials");
     }
   } catch (err) {
     res.status(400).send("ERROR:" + err.message);
   }
 });
+
 //logout api
 
 
